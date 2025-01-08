@@ -1,16 +1,25 @@
 package com.mycompany.literalura;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 import java.util.List;
 
-@JsonIgnoreProperties(ignoreUnknown = true)  // Ignorar propiedades desconocidas
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Book {
+    @JsonAlias("id")
     private int id;
-    private String title;
-    private List<Author> authors;
-    private int download_count;
 
-    // Getters y Setters
+    @JsonAlias("title")
+    private String title;
+
+    @JsonAlias("authors")
+    private List<Author> authors;
+
+    @JsonAlias("download_count")
+    private int downloadCount;
+
+    // Getters, Setters y toString
     public int getId() {
         return id;
     }
@@ -35,11 +44,21 @@ public class Book {
         this.authors = authors;
     }
 
-    public int getDownload_count() {
-        return download_count;
+    public int getDownloadCount() {
+        return downloadCount;
     }
 
-    public void setDownload_count(int download_count) {
-        this.download_count = download_count;
+    public void setDownloadCount(int downloadCount) {
+        this.downloadCount = downloadCount;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", authors=" + authors +
+                ", downloadCount=" + downloadCount +
+                '}';
     }
 }

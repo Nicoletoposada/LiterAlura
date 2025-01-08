@@ -7,53 +7,44 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public class LiterAlura{
+public class LiterAlura {
     public static void main(String[] args) {
         // Endpoint de la API Gutendex
         String apiUrl = "https://gutendex.com/books/?search=pride";
 
-        // Crear el cliente HTTP
-        HttpClient client = HttpClient.newHttpClient();
+        // Obtener y procesar datos
+        BookResponse bookResponse = fetchBooks(apiUrl);
+        if (bookResponse != null) {
+            displayBooks(bookResponse);
+        }
+    }
 
-        // Configurar la solicitud HTTP
+    private static BookResponse fetchBooks(String apiUrl) {
+        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl)) // URI del endpoint
-                .GET() // Método GET
+                .uri(URI.create(apiUrl))
+                .GET()
                 .build();
 
         try {
-            // Enviar la solicitud y obtener la respuesta
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            // Verificar el código de estado
             if (response.statusCode() == 200) {
-                // Crear el ObjectMapper para analizar el JSON
                 ObjectMapper mapper = new ObjectMapper();
-
-                // Mapear el JSON a la clase BookResponse
-                BookResponse bookResponse = mapper.readValue(response.body(), BookResponse.class);
-
-                // Mostrar el conteo total de libros
-                System.out.println("Total de libros encontrados: " + bookResponse.getCount());
-
-                // Mostrar los títulos y autores de los primeros resultados
-                System.out.println("Libros encontrados:");
-                for (Book book : bookResponse.getResults()) {
-                    System.out.println("Título: " + book.getTitle());
-                    System.out.println("Autor(es):");
-                    for (Author author : book.getAuthors()) {
-                        System.out.println("  - " + author.getName());
-                    }
-                    System.out.println("Descargas: " + book.getDownload_count());
-                    System.out.println("------");
-                }
-            } else {    
-                System.out.println("Error al realizar la solicitud. Código de estado: " + response.statusCode());
+                return mapper.readValue(response.body(), BookResponse.class);
+            } else {
+                System.out.println("Error: Código de estado " + response.statusCode());
             }
-
         } catch (Exception e) {
-            System.err.println("Ocurrió un error al procesar la solicitud:");
+            System.err.println("Error al realizar la solicitud:");
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static void displayBooks(BookResponse bookResponse) {
+        System.out.println("Total de libros encontrados: " + bookResponse.getCount());
+        for (Book book : bookResponse.getResults()) {
+            System.out.println(book); // Usa el método toString de Book
         }
     }
 }
