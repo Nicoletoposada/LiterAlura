@@ -91,19 +91,22 @@ public class LiterAlura {
     }
 
     private static void filterBooksByLanguage(Scanner scanner) {
-        System.out.print("Ingrese el idioma para filtrar (ejemplo: en): ");
-        String language = scanner.nextLine();
+    System.out.println("Ejemplos de idiomas disponibles:");
+    System.out.println("en: Inglés, es: Español, fr: Francés, de: Alemán, it: Italiano");
+    System.out.println("pt: Portugués, nl: Holandés, ru: Ruso, zh: Chino, ja: Japonés");
+    System.out.println("Ingrese el código de idioma para filtrar: ");
+    
+    String language = scanner.nextLine();
+    List<Book> filteredBooks = bookCatalog.stream()
+            .filter(book -> language.equalsIgnoreCase(book.getLanguage()))
+            .toList();
 
-        List<Book> filteredBooks = bookCatalog.stream()
-                .filter(book -> language.equalsIgnoreCase(book.getLanguage()))
-                .toList();
-
-        if (filteredBooks.isEmpty()) {
-            System.out.println("No se encontraron libros en ese idioma.");
-        } else {
-            System.out.println("\n=== Libros en Idioma " + language + " ===");
-            for (Book book : filteredBooks) {
-                System.out.println(book);
+    if (filteredBooks.isEmpty()) {
+        System.out.println("No se encontraron libros en ese idioma.");
+    } else {
+        System.out.println("\n=== Libros en Idioma " + language + " ===");
+        for (Book book : filteredBooks) {
+            System.out.println(book);
             }
         }
     }
