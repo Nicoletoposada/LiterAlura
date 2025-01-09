@@ -1,7 +1,7 @@
 package com.mycompany.literalura;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
@@ -18,6 +18,11 @@ public class Book {
 
     @JsonAlias("download_count")
     private int downloadCount;
+
+    @JsonAlias("languages")
+    private List<String> languages;
+
+    private String language; // Primer idioma
 
     // Getters, Setters y toString
     public int getId() {
@@ -52,12 +57,29 @@ public class Book {
         this.downloadCount = downloadCount;
     }
 
+    public List<String> getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
     @Override
     public String toString() {
         return "Book{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", authors=" + authors +
+                ", language='" + language + '\'' +
                 ", downloadCount=" + downloadCount +
                 '}';
     }

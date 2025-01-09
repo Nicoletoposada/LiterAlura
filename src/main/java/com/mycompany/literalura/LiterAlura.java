@@ -1,73 +1,63 @@
 package com.mycompany.literalura;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
-@SpringBootApplication
-public class LiterAlura implements CommandLineRunner {
+public class LiterAlura {
+    private static final String BASE_API_URL = "https://gutendex.com/books/";
+    private static final List<Book> bookCatalog = new ArrayList<>();
 
     public static void main(String[] args) {
-        SpringApplication.run(LiterAlura.class, args);
-    }
-
-    @Override
-    public void run(String... args) throws Exception {
         Scanner scanner = new Scanner(System.in);
-        boolean exit = false;
+        int option;
 
-        while (!exit) {
+        do {
             displayMenu();
-            int choice = getUserChoice(scanner);
-
-            switch (choice) {
-                case 1:
-                    System.out.println("Ingrese el término de búsqueda:");
-                    String searchTerm = scanner.nextLine();
-                    String apiUrl = "https://gutendex.com/books/?search=" + searchTerm;
-                    BookResponse bookResponse = fetchBooks(apiUrl);
-                    if (bookResponse != null) {
-                        displayBooks(bookResponse);
-                    } else {
-                        System.out.println("No se pudieron recuperar los libros.");
-                    }
-                    break;
-
-                case 2:
-                    System.out.println("Gracias por usar LiterAlura. ¡Hasta pronto!");
-                    exit = true;
-                    break;
-
-                default:
-                    System.out.println("Opción no válida. Intente de nuevo.");
+            option = Integer.parseInt(scanner.nextLine());
+            switch (option) {
+                case 1 -> searchBookByTitle(scanner);
+                case 2 -> listAllBooks();
+                case 3 -> filterBooksByLanguage(scanner);
+                case 0 -> System.out.println("Saliendo del programa...");
+                default -> System.out.println("Opción inválida. Intente de nuevo.");
             }
-        }
+        } while (option != 0);
     }
 
-    private void displayMenu() {
-        System.out.println("\n--- Menú de LiterAlura ---");
-        System.out.println("1. Buscar libros por título");
-        System.out.println("2. Salir");
+    private static void displayMenu() {
+        System.out.println("\n=== Menú ===");
+        System.out.println("1. Buscar libro por título");
+        System.out.println("2. Listar todos los libros");
+        System.out.println("3. Filtrar libros por idioma");
+        System.out.println("0. Salir");
         System.out.print("Seleccione una opción: ");
     }
 
-    private int getUserChoice(Scanner scanner) {
-        try {
-            return Integer.parseInt(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            System.out.println("Entrada no válida. Por favor, ingrese un número.");
-            return -1; // Valor para indicar opción inválida
+    private static void searchBookByTitle(Scanner scanner) {
+        System.out.print("Ingrese el título del libro: ");
+        String title = scanner.nextLine();
+        String apiUrl = BASE_API_URL + "?search=" + title.replace(" ", "+");
+
+        BookResponse bookResponse = fetchBooks(apiUrl);
+        if (bookResponse != null && !bookResponse.getResults().isEmpty()) {
+            Book book = bookResponse.getResults().get(0); // Tomar el primer resultado
+            book.setLanguage(bookResponse.getResults().get(0).getLanguages().get(0)); // Guardar primer idioma
+            bookCatalog.add(book);
+            System.out.println("Libro agregado al catálogo: ");
+            System.out.println(book);
+        } else {
+            System.out.println("No se encontró ningún libro con ese título.");
         }
     }
 
-    private BookResponse fetchBooks(String apiUrl) {
+    private static BookResponse fetchBooks(String apiUrl) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl))
@@ -89,10 +79,32 @@ public class LiterAlura implements CommandLineRunner {
         return null;
     }
 
-    private void displayBooks(BookResponse bookResponse) {
-        System.out.println("\nTotal de libros encontrados: " + bookResponse.getCount());
-        for (Book book : bookResponse.getResults()) {
-            System.out.println(book); // Usa el método toString de Book
+    private static void listAllBooks() {
+        if (bookCatalog.isEmpty()) {
+            System.out.println("El catálogo está vacío.");
+        } else {
+            System.out.println("\n=== Catálogo de Libros ===");
+            for (Book book : bookCatalog) {
+                System.out.println(book);
+            }
+        }
+    }
+
+    private static void filterBooksByLanguage(Scanner scanner) {
+        System.out.print("Ingrese el idioma para filtrar (ejemplo: en): ");
+        String language = scanner.nextLine();
+
+        List<Book> filteredBooks = bookCatalog.stream()
+                .filter(book -> language.equalsIgnoreCase(book.getLanguage()))
+                .toList();
+
+        if (filteredBooks.isEmpty()) {
+            System.out.println("No se encontraron libros en ese idioma.");
+        } else {
+            System.out.println("\n=== Libros en Idioma " + language + " ===");
+            for (Book book : filteredBooks) {
+                System.out.println(book);
+            }
         }
     }
 }
