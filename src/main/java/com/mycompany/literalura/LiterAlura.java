@@ -13,6 +13,7 @@ import java.util.Scanner;
 public class LiterAlura {
     private static final String BASE_API_URL = "https://gutendex.com/books/";
     private static final List<Book> bookCatalog = new ArrayList<>();
+    private static final List<Author> authorList = new ArrayList<>();
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -25,6 +26,8 @@ public class LiterAlura {
                 case 1 -> searchBookByTitle(scanner);
                 case 2 -> listAllBooks();
                 case 3 -> filterBooksByLanguage(scanner);
+                case 4 -> listAllAuthors();
+                case 5 -> listAuthorsAliveInYear(scanner);
                 case 0 -> System.out.println("Saliendo del programa...");
                 default -> System.out.println("Opción inválida. Intente de nuevo.");
             }
@@ -36,6 +39,8 @@ public class LiterAlura {
         System.out.println("1. Buscar libro por título");
         System.out.println("2. Listar todos los libros");
         System.out.println("3. Filtrar libros por idioma");
+        System.out.println("4. Listar todos los autores");
+        System.out.println("5. Listar autores vivos en un año específico");
         System.out.println("0. Salir");
         System.out.print("Seleccione una opción: ");
     }
@@ -48,6 +53,10 @@ public class LiterAlura {
         BookResponse bookResponse = fetchBooks(apiUrl);
         if (bookResponse != null && !bookResponse.getResults().isEmpty()) {
             Book book = bookResponse.getResults().get(0); // Tomar el primer resultado
+            if (!book.getAuthors().isEmpty()) {
+                Author primaryAuthor = book.getAuthors().get(0); // Solo el primer autor
+                authorList.add(primaryAuthor);
+            }
             book.setLanguage(bookResponse.getResults().get(0).getLanguages().get(0)); // Guardar primer idioma
             bookCatalog.add(book);
             System.out.println("Libro agregado al catálogo: ");
@@ -91,22 +100,50 @@ public class LiterAlura {
     }
 
     private static void filterBooksByLanguage(Scanner scanner) {
-    System.out.println("Ejemplos de idiomas disponibles:");
-    System.out.println("en: Inglés, es: Español, fr: Francés, de: Alemán, it: Italiano");
-    System.out.println("pt: Portugués, nl: Holandés, ru: Ruso, zh: Chino, ja: Japonés");
-    System.out.println("Ingrese el código de idioma para filtrar: ");
-    
-    String language = scanner.nextLine();
-    List<Book> filteredBooks = bookCatalog.stream()
-            .filter(book -> language.equalsIgnoreCase(book.getLanguage()))
-            .toList();
+        System.out.println("Ejemplos de idiomas disponibles:");
+        System.out.println("en: Inglés, es: Español, fr: Francés, de: Alemán, it: Italiano");
+        System.out.println("pt: Portugués, nl: Holandés, ru: Ruso, zh: Chino, ja: Japonés");
+        System.out.print("Ingrese el código de idioma para filtrar: ");
+        String language = scanner.nextLine();
+        List<Book> filteredBooks = bookCatalog.stream()
+                .filter(book -> language.equalsIgnoreCase(book.getLanguage()))
+                .toList();
 
-    if (filteredBooks.isEmpty()) {
-        System.out.println("No se encontraron libros en ese idioma.");
-    } else {
-        System.out.println("\n=== Libros en Idioma " + language + " ===");
-        for (Book book : filteredBooks) {
-            System.out.println(book);
+        if (filteredBooks.isEmpty()) {
+            System.out.println("No se encontraron libros en ese idioma.");
+        } else {
+            System.out.println("\n=== Libros en Idioma " + language + " ===");
+            for (Book book : filteredBooks) {
+                System.out.println(book);
+            }
+        }
+    }
+
+    private static void listAllAuthors() {
+        if (authorList.isEmpty()) {
+            System.out.println("No hay autores registrados.");
+        } else {
+            System.out.println("\n=== Lista de Autores ===");
+            for (Author author : authorList) {
+                System.out.println(author);
+            }
+        }
+    }
+
+    private static void listAuthorsAliveInYear(Scanner scanner) {
+        System.out.print("Ingrese el año para buscar autores vivos: ");
+        int year = Integer.parseInt(scanner.nextLine());
+        List<Author> aliveAuthors = authorList.stream()
+                .filter(author -> (author.getBirthYear() != null && author.getBirthYear() <= year) &&
+                        (author.getDeathYear() == null || author.getDeathYear() > year))
+                .toList();
+
+        if (aliveAuthors.isEmpty()) {
+            System.out.println("No se encontraron autores vivos en ese año.");
+        } else {
+            System.out.println("\n=== Autores Vivos en el Año " + year + " ===");
+            for (Author author : aliveAuthors) {
+                System.out.println(author);
             }
         }
     }
