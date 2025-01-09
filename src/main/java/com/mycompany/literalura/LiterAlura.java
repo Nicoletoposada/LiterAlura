@@ -1,25 +1,73 @@
 package com.mycompany.literalura;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Scanner;
 
-public class LiterAlura {
+@SpringBootApplication
+public class LiterAlura implements CommandLineRunner {
+
     public static void main(String[] args) {
-        // Endpoint de la API Gutendex
-        String apiUrl = "https://gutendex.com/books/?search=pride";
+        SpringApplication.run(LiterAlura.class, args);
+    }
 
-        // Obtener y procesar datos
-        BookResponse bookResponse = fetchBooks(apiUrl);
-        if (bookResponse != null) {
-            displayBooks(bookResponse);
+    @Override
+    public void run(String... args) throws Exception {
+        Scanner scanner = new Scanner(System.in);
+        boolean exit = false;
+
+        while (!exit) {
+            displayMenu();
+            int choice = getUserChoice(scanner);
+
+            switch (choice) {
+                case 1:
+                    System.out.println("Ingrese el término de búsqueda:");
+                    String searchTerm = scanner.nextLine();
+                    String apiUrl = "https://gutendex.com/books/?search=" + searchTerm;
+                    BookResponse bookResponse = fetchBooks(apiUrl);
+                    if (bookResponse != null) {
+                        displayBooks(bookResponse);
+                    } else {
+                        System.out.println("No se pudieron recuperar los libros.");
+                    }
+                    break;
+
+                case 2:
+                    System.out.println("Gracias por usar LiterAlura. ¡Hasta pronto!");
+                    exit = true;
+                    break;
+
+                default:
+                    System.out.println("Opción no válida. Intente de nuevo.");
+            }
         }
     }
 
-    private static BookResponse fetchBooks(String apiUrl) {
+    private void displayMenu() {
+        System.out.println("\n--- Menú de LiterAlura ---");
+        System.out.println("1. Buscar libros por título");
+        System.out.println("2. Salir");
+        System.out.print("Seleccione una opción: ");
+    }
+
+    private int getUserChoice(Scanner scanner) {
+        try {
+            return Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            System.out.println("Entrada no válida. Por favor, ingrese un número.");
+            return -1; // Valor para indicar opción inválida
+        }
+    }
+
+    private BookResponse fetchBooks(String apiUrl) {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl))
@@ -41,8 +89,8 @@ public class LiterAlura {
         return null;
     }
 
-    private static void displayBooks(BookResponse bookResponse) {
-        System.out.println("Total de libros encontrados: " + bookResponse.getCount());
+    private void displayBooks(BookResponse bookResponse) {
+        System.out.println("\nTotal de libros encontrados: " + bookResponse.getCount());
         for (Book book : bookResponse.getResults()) {
             System.out.println(book); // Usa el método toString de Book
         }
